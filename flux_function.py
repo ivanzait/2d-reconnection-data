@@ -22,7 +22,6 @@ args = arg_parser.parse_args()
 
 os.makedirs(args.outdir, exist_ok=True)
 
-
 for run in runs:
 
     run_id = run['id']
@@ -30,7 +29,7 @@ for run in runs:
     t_max = run['t_max']
 
     # fluxfunction files
-    if run_id == 'BFD':
+    if run_id == 'BFD' or 'BIB':
         flux_dir = 'fluxfunction'
     else:
         flux_dir = 'flux'
@@ -38,7 +37,7 @@ for run in runs:
     flux_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/{flux_dir}'
 
     # bulk files
-    bulk_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/bulk'
+    bulk_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/'
     bulkfile = f'{bulk_path}/bulk.{str(t_min).zfill(7)}.vlsv'
 
     # find intersection of two contours
@@ -65,7 +64,7 @@ for run in runs:
     z_array = np.array(range(int(zmin), int(zmax), int(dx)))
 
     for index in range(t_min, t_max+1):
-        fluxfile = f'{flux_path}/bulk.{str(index).zfill(7)}.bin'
+        fluxfile = f'{flux_path}/flux.{str(index).zfill(7)}.bin'
 
         # open input fluxfile
         flux_function = np.fromfile(fluxfile, dtype='double').reshape(z_cells, x_cells)

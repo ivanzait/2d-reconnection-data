@@ -78,6 +78,18 @@ for run in runs:
         Pd_name = 'PTensorDiagonal'
         Pod_name = 'PTensorOffDiagonal'
 
+    if run_id == 'BIB':
+        bulk_path = '/wrk-vakka/group/spacephysics/vlasiator/2D/BIB/'
+        x_dir = '/wrk-vakka/group/spacephysics/vlasiator/2D/BIB/x_and_o_points/'
+        # naming:
+        E_name = 'fg_e'
+        B_name = 'vg_b_vol'
+        rho_name = 'proton/vg_rho'
+        V_name = 'proton/vg_v'
+        Pd_name = 'proton/vg_ptensor_diagonal'
+        Pod_name = 'proton/vg_ptensor_offdiagonal'
+
+
     name_list = [E_name, B_name, rho_name, V_name, Pd_name, Pod_name]
 
     for t in range(start_time, end_time + 1):

@@ -24,14 +24,9 @@
 
 runs = [
     {
-        "id": "BGD",
-        "t_min": 550,
-        "t_max": 552,
-    },
-    {
-        "id": "BGF",
-        "t_min": 230,
-        "t_max": 232,
+        "id": "BIB",
+        "t_min": 1,
+        "t_max": 20,
     }
    ]
 
