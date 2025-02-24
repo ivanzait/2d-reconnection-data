@@ -29,15 +29,20 @@ for run in runs:
     t_max = run['t_max']
 
     # fluxfunction files
-    if run_id == 'BFD' or 'BIB':
+    if run_id == 'BIB' or 'BIC' or 'BID':
         flux_dir = 'fluxfunction'
-    else:
+        bulk_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/'
+        flux_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/{flux_dir}'
+    elif run_id == 'BCH':
+        bulk_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/bulk/'
         flux_dir = 'flux'
+        flux_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/{flux_dir}'
+        
 
-    flux_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/{flux_dir}'
+
 
     # bulk files
-    bulk_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/'
+    #bulk_path = f'/wrk-vakka/group/spacephysics/vlasiator/2D/{run_id}/bulk'
     bulkfile = f'{bulk_path}/bulk.{str(t_min).zfill(7)}.vlsv'
 
     # find intersection of two contours
@@ -64,7 +69,11 @@ for run in runs:
     z_array = np.array(range(int(zmin), int(zmax), int(dx)))
 
     for index in range(t_min, t_max+1):
-        fluxfile = f'{flux_path}/flux.{str(index).zfill(7)}.bin'
+        if run_id == 'BIB' or 'BIC':
+            fluxfile = f'{flux_path}/flux.{str(index).zfill(7)}.bin'
+        elif run_id == 'BCH':
+            fluxfile = f'{flux_path}/bulk.{str(index).zfill(7)}.bin'
+
 
         # open input fluxfile
         flux_function = np.fromfile(fluxfile, dtype='double').reshape(z_cells, x_cells)

@@ -23,20 +23,27 @@
 
 
 runs = [
-    {
-        "id": "BIB",
+     {"id":"BCH",
+         "t_min": 1800,
+         "t_max": 4300,
+        },
+     {"id": "BIC",
         "t_min": 1,
-        "t_max": 20,
-    }
+        "t_max": 1700,
+        },
+     {"id": "BIB",
+         "t_min": 1,
+         "t_max": 1500,
+         }
    ]
 
 
 Re = 6371000  # Earth's radius
 
-xmin = -20
-xmax = 10
-zmin = -10
-zmax = 10
+xmin = -30
+xmax = 15
+zmin = -15
+zmax = 15
 
-height = 428
-width = 642 
+height = 400
+width = 600 

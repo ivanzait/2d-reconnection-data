@@ -73,9 +73,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--out_dir', type=str)
     parser.add_argument('-d', '--data_dir', type=str, default='frames')
-    parser.add_argument('-s', '--step_size', type=int, default=10)
-    parser.add_argument('-n', '--num_steps', type=int, default=5)
-    parser.add_argument('-t', '--num_test_sequences', type=int, default=10)
+    parser.add_argument('-s', '--step_size', type=int, default=5)
+    parser.add_argument('-n', '--num_steps', type=int, default=500)
+    parser.add_argument('-t', '--num_test_sequences', type=int, default=20)
     args = parser.parse_args()
 
     create_datasets(args.data_dir, args.out_dir, args.step_size, args.num_steps, args.num_test_sequences)

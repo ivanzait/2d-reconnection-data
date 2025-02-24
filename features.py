@@ -91,13 +91,21 @@ def label_reconnection(labeling_x, labeling_z, B, boxre):
     return reconnection
 
 
-def get_agyrotropy(file_name, boxre, name_list):
+def get_agyrotropy(file_name, boxre, name_dict):
 
-    [E_name, B_name, rho_name, V_name, Pd_name, Pod_name] = name_list
+    B_name = name_dict['B']    
+    Pd_name = name_dict['Pd']    
+    Pod_name = name_dict['Pod']    
 
-    B = get_var(file_name, boxre, var_name=B_name, grid_flag='vg')
+    if B_name == 'B':
+        B = get_var(file_name, boxre, var_name=B_name, grid_flag='vg')
+    else:
+        B = get_var(file_name, boxre, var_name=B_name, grid_flag='fg')
     Pdiag = get_var(file_name, boxre, var_name=Pd_name, grid_flag='vg')
     P0diag = get_var(file_name, boxre, var_name=Pod_name, grid_flag='vg')
+    
+    print('Pdiag shape', np.shape(Pdiag))
+    print('B shape', np.shape(B))
 
     sx, sy = B.shape[1], B.shape[0]
 
@@ -114,11 +122,16 @@ def get_agyrotropy(file_name, boxre, name_list):
     return aGyrotropy
 
 
-def get_anisotropy(file_name, boxre, name_list):
+def get_anisotropy(file_name, boxre, name_dict):
 
-    [E_name, B_name, rho_name, V_name, Pd_name, Pod_name] = name_list
+    B_name = name_dict['B']    
+    Pd_name = name_dict['Pd']    
+    Pod_name = name_dict['Pod']    
 
-    B = get_var(file_name, boxre, var_name=B_name, grid_flag='vg')
+    if B_name == 'B':
+        B = get_var(file_name, boxre, var_name=B_name, grid_flag='vg')
+    else:
+        B = get_var(file_name, boxre, var_name=B_name, grid_flag='fg')
     Pdiag = get_var(file_name, boxre, var_name=Pd_name, grid_flag='vg')
     P0diag = get_var(file_name, boxre, var_name=Pod_name, grid_flag='vg')
 
@@ -139,16 +152,24 @@ def get_anisotropy(file_name, boxre, name_list):
     return anisotropy
 
 
-def get_pressure(file_name, boxre, name_list):
-    [E_name, B_name, rho_name, V_name, Pd_name, Pod_name] = name_list
+def get_pressure_old(file_name, boxre, name_dict):
+    Pd_name = name_dict['Pd']    
     Pdiag = get_var(file_name, boxre, var_name=Pd_name, grid_flag='vg')
     pressure_isotropic = (Pdiag[:, :, 0] + Pdiag[:, :, 1] + Pdiag[:, :, 2]) / 3
     return pressure_isotropic
 
+def get_temperature_old(file_name, boxre, name_dict):         
+    rho_name = name_dict['rho']
+    pressure = get_pressure_old(file_name, boxre, name_dict)
+    rho = get_var(file_name, boxre, rho_name, grid_flag='vg')
+    temperature = pressure / rho
+    return temperature
 
-def get_temperature(file_name, boxre, name_list):
-    [E_name, B_name, rho_name, V_name, Pd_name, Pod_name] = name_list
-    pressure = get_pressure(file_name, boxre, name_list)
+
+def get_temperature(file_name, boxre, name_dict):    
+    P_name = name_dict['pressure']    
+    rho_name = name_dict['rho']
+    pressure = get_var(file_name, boxre, P_name, grid_flag='vg')
     rho = get_var(file_name, boxre, rho_name, grid_flag='vg')
     temperature = pressure / rho
     return temperature

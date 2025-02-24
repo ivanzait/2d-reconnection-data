@@ -11,7 +11,7 @@ from utils import wrap, resize
 import features
 import numpy as np
 
-######## MAIN C#########
+######## MAIN #########
 
 boxre = [xmin, xmax, zmin, zmax]
 
@@ -43,6 +43,7 @@ for run in runs:
         V_name = 'rho_v'
         Pd_name = 'PTensorDiagonal'
         Pod_name = 'PTensorOffDiagonal'
+        P_name = 'placeholder'
 
     if run_id == 'BGF':
         bulk_path = '/wrk-vakka/group/spacephysics/vlasiator/2D/BGF/extendvspace_restart229/bulk/'
@@ -83,63 +84,86 @@ for run in runs:
         x_dir = '/wrk-vakka/group/spacephysics/vlasiator/2D/BIB/x_and_o_points/'
         # naming:
         E_name = 'fg_e'
-        B_name = 'vg_b_vol'
+        B_name = 'fg_b'
         rho_name = 'proton/vg_rho'
         V_name = 'proton/vg_v'
-        Pd_name = 'proton/vg_ptensor_diagonal'
-        Pod_name = 'proton/vg_ptensor_offdiagonal'
+        P_name = 'vg_pressure'
+        Pd_name = 'proton/vg_ptensor_nonthermal_diagonal'
+        Pod_name = 'proton/vg_ptensor_nonthermal_offdiagonal'
 
+    if run_id == 'BIC':
+        bulk_path = '/wrk-vakka/group/spacephysics/vlasiator/2D/BIB/'
+        x_dir = '/wrk-vakka/group/spacephysics/vlasiator/2D/BIB/x_and_o_points/'
+        # naming:
+        E_name = 'fg_e'
+        B_name = 'fg_b'
+        rho_name = 'proton/vg_rho'
+        V_name = 'proton/vg_v'
+        P_name = 'vg_pressure'
+        Pd_name = 'proton/vg_ptensor_nonthermal_diagonal'
+        Pod_name = 'proton/vg_ptensor_nonthermal_offdiagonal'
 
-    name_list = [E_name, B_name, rho_name, V_name, Pd_name, Pod_name]
+    name_dict = {'E':E_name,
+                 'B':B_name,
+                 'rho':rho_name,
+                 'V':V_name,
+                 'pressure':P_name,
+                 'Pd':Pd_name,
+                 'Pod':Pod_name,
+                 } 
+
 
     for t in range(start_time, end_time + 1):
         print('run', run_id, 't=', str(t))
 
         # Loading x points
-        # x_loc_file = f'{args.x_dir}/{run_id}_x_points_{t}.txt'
-        x_loc_file = x_dir + 'x_point_location_' + str(t) + '.txt'
+        x_loc_file = f'{args.x_dir}/{run_id}_x_points_{t}.txt'
+        # x_loc_file = x_dir + 'x_point_location_' + str(t) + '.txt'
         labeling_x, labeling_z = features.get_x_points(x_loc_file, boxre)
         
-
         # read simulation data
         file_name = bulk_path + 'bulk.' + str(t).zfill(7) + '.vlsv'        
-
-        B = features.get_var(file_name, boxre, B_name, grid_flag='vg')
-        B_mag = np.linalg.norm(B, axis=-1)
-        Bx, By, Bz = B[:, :, 0], B[:, :, 1], B[:, :, 2]
-
-        if run_id == 'BCH':
-            E = features.get_var(file_name, boxre, E_name, grid_flag='vg')
-        elif run_id == 'BCQ':    
-            E = features.get_var(file_name, boxre, E_name, grid_flag='vg')
-        elif run_id == 'BGF':
-            E = features.get_var(file_name, boxre, E_name, grid_flag='fg')
-        elif run_id == 'BGD':
-            E = features.get_var(file_name, boxre, E_name, grid_flag='fg')
-
-        E_mag = np.linalg.norm(E, axis=-1)
-        Ex, Ey, Ez = B[:, :, 0], E[:, :, 1], E[:, :, 2]
-
+        # read density
         rho = features.get_var(file_name, boxre, rho_name, grid_flag='vg')
         earth_mask = rho == 0
-
+        # read velocity
         v = features.get_var(file_name, boxre, V_name, grid_flag='vg')
         v_mag = np.linalg.norm(v, axis=-1)
         vx, vy, vz = v[:, :, 0], v[:, :, 1], v[:, :, 2]
 
+
+        ## need cases for fields due to different naming over the years
+        ## Magnetic field
+        if run_id == 'BCH':
+            B = features.get_var(file_name, boxre, B_name, grid_flag='vg')
+        elif run_id == 'BIB' or 'BIC':
+            B = features.get_var(file_name, boxre, B_name, grid_flag='fg')                
+        B_mag = np.linalg.norm(B, axis=-1)
+        Bx, By, Bz = B[:, :, 0], B[:, :, 1], B[:, :, 2]
+        ## Electric field
+        if run_id == 'BCH':
+            E = features.get_var(file_name, boxre, E_name, grid_flag='vg')
+        elif run_id == 'BCQ':    
+            E = features.get_var(file_name, boxre, E_name, grid_flag='vg')
+        elif run_id == 'BGF' or 'BIB' or 'BGD' or 'BIC' :
+            E = features.get_var(file_name, boxre, E_name, grid_flag='fg')
+        E_mag = np.linalg.norm(E, axis=-1)
+        Ex, Ey, Ez = B[:, :, 0], E[:, :, 1], E[:, :, 2]
+
+
+        ## Also need cases for pressure tensor components // will be great to fix this shame
         # calculate isotropic pressure and temperature
-        pressure = features.get_pressure(
-            file_name=file_name, boxre=boxre, name_list=name_list)
-        temperature = features.get_temperature(
-            file_name=file_name, boxre=boxre, name_list=name_list)
+        if run_id=='BCH':
+            pressure = features.get_pressure_old(file_name, boxre, name_dict)
+            temperature = features.get_temperature_old(file_name, boxre, name_dict)
+        elif run_id == 'BIB' or 'BIC':
+            pressure = features.get_var(file_name, boxre, P_name, grid_flag='vg')
+            temperature = features.get_temperature(file_name, boxre, name_dict)
 
         # calculate pressure agyrotropy and anisotropy
-        anisotropy = features.get_anisotropy(
-            file_name=file_name, boxre=boxre, name_list=name_list)
-        agyrotropy = features.get_agyrotropy(
-            file_name=file_name, boxre=boxre, name_list=name_list)
-        reconnection = features.label_reconnection(
-            labeling_x, labeling_z, B, boxre)
+        anisotropy = features.get_anisotropy(file_name, boxre, name_dict)
+        agyrotropy = features.get_agyrotropy(file_name, boxre, name_dict)             
+        reconnection = features.label_reconnection(labeling_x, labeling_z, B, boxre)
 
         # interpolation
         var_list = [
@@ -171,5 +195,4 @@ for run in runs:
         frame_data[earth_mask] = 0
 
         np.save(f'{args.outdir}/{run_id}_{t}.npy', resize(frame_data))
-
         print(f'Extracted frame {run_id}_{t}')
